@@ -1,0 +1,27 @@
+# Notify - GitHub to Discord Notification Service
+# Copy this file to Config.toml and fill in your values
+
+# Server port
+port = 8080
+
+# Discord Webhook Configuration
+# Create a webhook in your Discord channel: Server Settings > Integrations > Webhooks
+# The URL format is: https://discord.com/api/webhooks/{WEBHOOK_ID}/{WEBHOOK_TOKEN}
+discordWebhookId = "123456789012345678"
+discordWebhookToken = "abcdefghijklmnop_QRSTUVWXYZ1234567890"
+
+# GitHub Organization
+# The organization name to monitor (github.com/ORGANIZATION_NAME)
+# Only events from repositories in this organization will be processed
+githubOrganization = "your-org-name"
+
+# GitHub Webhook Secret
+# Create your own secret string (high entropy random string)
+# Use this SAME secret when creating the webhook in GitHub:
+#   Organization Settings > Webhooks > Add webhook > Secret
+githubWebhookSecret = "your-super-secret-webhook-key"
+
+# GitHub Personal Access Token (Optional)
+# Only needed if you want to make API calls back to GitHub
+# Create one at: https://github.com/settings/tokens
+githubToken = ""

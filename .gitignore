@@ -20,3 +20,7 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+# Keep example files
+!.env.example
+!Config.toml.example
