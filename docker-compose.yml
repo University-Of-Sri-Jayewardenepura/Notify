@@ -1,0 +1,36 @@
+# Docker Compose for Notify - GitHub to Discord Webhook Service
+# Usage: docker-compose up -d
+
+services:
+  notify:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notify-webhook
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Server port (must match exposed port)
+      - BAL_CONFIG_VAR_port=8080
+      # Discord Webhook Configuration
+      # Get these from your Discord webhook URL: https://discord.com/api/webhooks/{ID}/{TOKEN}
+      - BAL_CONFIG_VAR_discordWebhookId=${DISCORD_WEBHOOK_ID}
+      - BAL_CONFIG_VAR_discordWebhookToken=${DISCORD_WEBHOOK_TOKEN}
+      # GitHub Organization to monitor
+      - BAL_CONFIG_VAR_githubOrganization=${GITHUB_ORGANIZATION}
+      # GitHub Webhook Secret (same secret configured in GitHub webhook settings)
+      - BAL_CONFIG_VAR_githubWebhookSecret=${GITHUB_WEBHOOK_SECRET}
+      # GitHub Token (optional, for API calls)
+      - BAL_CONFIG_VAR_githubToken=${GITHUB_TOKEN:-}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/webhook/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

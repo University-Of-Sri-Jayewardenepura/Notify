@@ -24,3 +24,9 @@ Thumbs.db
 # Keep example files
 !.env.example
 !Config.toml.example
+
+# Internal documentation
+COMMIT_CONVENTION.md
+
+# Cloud configuration (generated/customizable)
+Cloud.toml

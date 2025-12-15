@@ -1,0 +1,32 @@
+# Ballerina build artifacts
+target/
+Dependencies.toml
+
+# Configuration files with secrets
+Config.toml
+.env
+.env.local
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation (not needed in container)
+README.md
+COMMIT_CONVENTION.md
+*.md
+
+# Example files
+*.example
+
+# Logs
+*.log
