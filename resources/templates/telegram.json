@@ -1,3 +1,0 @@
-{
-    "template": "*{{title}}*\n\n{{description}}\n\n🔗 [View on GitHub]({{url}})\n\n📦 Repo: {{repository}}\n👤 Author: {{author}}\n⏰ {{timestamp}}"
-}
