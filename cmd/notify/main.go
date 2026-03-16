@@ -17,7 +17,7 @@ func main() {
 
 	log.Printf("starting notify on :%s", cfg.Port)
 
-	svc := service.New()
+	svc := service.New(cfg.GitHubOrganization, nil)
 
 	if err := http.ListenAndServe(":"+cfg.Port, httpapi.NewRouter(httpapi.RouterDependencies{
 		GitHubWebhookSecret: cfg.GitHubWebhookSecret,
