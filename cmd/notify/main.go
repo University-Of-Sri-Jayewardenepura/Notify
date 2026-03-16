@@ -6,6 +6,7 @@ import (
 
 	"github.com/University-Of-Sri-Jayewardenepura/Notify/internal/config"
 	"github.com/University-Of-Sri-Jayewardenepura/Notify/internal/httpapi"
+	"github.com/University-Of-Sri-Jayewardenepura/Notify/internal/integrations/discord"
 	"github.com/University-Of-Sri-Jayewardenepura/Notify/internal/service"
 )
 
@@ -17,7 +18,8 @@ func main() {
 
 	log.Printf("starting notify on :%s", cfg.Port)
 
-	svc := service.New(cfg.GitHubOrganization, nil)
+	discordClient := discord.NewClient("", cfg.DiscordWebhookID, cfg.DiscordWebhookToken, nil)
+	svc := service.New(cfg.GitHubOrganization, discord.NewDispatcher(discordClient))
 
 	if err := http.ListenAndServe(":"+cfg.Port, httpapi.NewRouter(httpapi.RouterDependencies{
 		GitHubWebhookSecret: cfg.GitHubWebhookSecret,
