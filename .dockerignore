@@ -1,13 +1,6 @@
 # Go build artifacts
 bin/
 dist/
-target/
-
-# Legacy Ballerina sources
-*.bal
-modules/
-Ballerina.toml
-Dependencies.toml
 
 # Configuration files with secrets
 .env

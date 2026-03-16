@@ -1,9 +1,6 @@
-# Ballerina
-target/
-Dependencies.toml
-
 # Configuration (contains secrets)
-Config.toml
+.env
+.env.local
 
 # Logs
 *.log
@@ -17,18 +14,10 @@ Config.toml
 .DS_Store
 Thumbs.db
 
-# Environment
-.env
-.env.local
-
 # Keep example files
 !.env.example
-!Config.toml.example
 
 # Internal documentation
 COMMIT_CONVENTION.md
-
-# Cloud configuration (generated/customizable)
-Cloud.toml
 
 docs/
