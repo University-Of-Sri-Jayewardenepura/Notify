@@ -1,172 +1,103 @@
-# Notify - GitHub to Discord Notification Service
+# Notify
 
-A Ballerina-based notification service that receives GitHub organization events via webhooks and sends rich notifications to Discord.
+A Go microservice that receives GitHub organization webhooks and sends formatted notifications to Discord.
 
 ## Features
 
-- GitHub webhook integration with HMAC-SHA256 signature validation
-- Organization-wide monitoring (all repos in your org)
-- Rich Discord embed notifications with colors and formatting
-- Support for multiple GitHub event types:
-  - Pull Requests (opened, merged, closed, ready for review)
-  - Issues (opened, closed, reopened)
-  - Push events (with commit details)
-  - Releases (published)
-  - Branch/Tag creation and deletion
-  - Repository forks
-  - Stars
-- Health check endpoint
+- GitHub webhook validation with HMAC-SHA256 signatures
+- Organization-level filtering for accepted events
+- Discord webhook delivery for supported GitHub events
+- Health endpoint at `GET /webhook/health`
+- Webhook receiver at `POST /webhook/github`
+
+Supported events:
+
+- Pull requests
+- Issues
+- Pushes
+- Releases
+- Create
+- Delete
+- Fork
+- Star
+- Ping
 
 ## Prerequisites
 
-- Ballerina 2201.10.0 or later (`brew install ballerina` on macOS)
-- Discord server with webhook permissions
-- GitHub organization with admin access
-
-## Quick Start
-
-1. **Configure the service:**
-```bash
-cp Config.toml.example Config.toml
-```
-
-2. **Edit `Config.toml` with your values:**
-```toml
-port = 8080
-
-# Discord - get these from your webhook URL
-discordWebhookId = "123456789012345678"
-discordWebhookToken = "your-webhook-token"
-
-# GitHub organization to monitor (github.com/YOUR_ORG)
-githubOrganization = "your-org-name"
-
-# Secret for webhook validation (you create this)
-githubWebhookSecret = "your-super-secret-key"
-```
-
-3. **Build and run:**
-```bash
-bal build
-bal run
-```
-
-The service starts on `http://localhost:8080`
+- Go `1.25.1+`
+- A Discord webhook
+- GitHub organization admin access for webhook setup
 
 ## Configuration
 
-### Discord Webhook Setup
+The service reads configuration from environment variables.
 
-1. Go to your Discord server
-2. Right-click the channel where you want notifications
-3. Select **Edit Channel** > **Integrations** > **Webhooks**
-4. Click **New Webhook** and copy the URL
-5. Extract the ID and token from the URL:
-   ```
-   https://discord.com/api/webhooks/WEBHOOK_ID/WEBHOOK_TOKEN
-                                    ^^^^^^^^^^  ^^^^^^^^^^^^^
-   ```
-6. Add these to your `Config.toml`
+Required:
 
-### GitHub Organization Webhook Setup
+- `DISCORD_WEBHOOK_ID`
+- `DISCORD_WEBHOOK_TOKEN`
+- `GITHUB_ORGANIZATION`
+- `GITHUB_WEBHOOK_SECRET`
 
-1. Go to your GitHub organization: `github.com/YOUR_ORG`
-2. Navigate to **Settings** > **Webhooks** > **Add webhook**
-3. Configure the webhook:
+Optional:
 
-| Field | Value |
-|-------|-------|
-| **Payload URL** | `https://your-server.com/webhook/github` |
-| **Content type** | `application/json` |
-| **Secret** | Same value as `githubWebhookSecret` in Config.toml |
+- `GITHUB_TOKEN`
+- `PORT` defaults to `8080`
 
-4. Under **Which events would you like to trigger this webhook?**, select **Let me select individual events** and choose:
-   - Pull requests
-   - Issues
-   - Pushes
-   - Releases
-   - Create (for branch/tag creation)
-   - Delete (for branch/tag deletion)
-   - Forks
-   - Stars
-   - (or select "Send me everything")
-
-5. Ensure **Active** is checked
-6. Click **Add webhook**
-
-GitHub will send a `ping` event to verify the connection.
-
-## API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/webhook/health` | GET | Health check - returns service status |
-| `/webhook/github` | POST | GitHub webhook receiver |
-
-## Event Notifications
-
-| Event | Color | Description |
-|-------|-------|-------------|
-| PR Opened | Blue | New pull request created |
-| PR Merged | Green | Pull request merged |
-| PR Closed | Red | Pull request closed without merge |
-| Issue Opened | Blue | New issue created |
-| Issue Closed | Green | Issue resolved |
-| Push | Orange | Commits pushed (shows up to 5) |
-| Release | Green | New release published |
-| Branch/Tag Created | Blue | New branch or tag |
-| Branch/Tag Deleted | Red | Branch or tag removed |
-| Fork | Purple | Repository forked |
-| Star | Yellow | New star on repository |
-
-## Development
+Example:
 
 ```bash
-# Build
-bal build
-
-# Run in development
-bal run
-
-# Run the built JAR
-java -jar target/bin/notify.jar
+cp .env.example .env
 ```
 
-## Deployment
+## Running Locally
 
-For production, you'll need to expose the service to the internet. Options:
-- Use a reverse proxy (nginx, Caddy) with HTTPS
-- Deploy to a cloud platform (AWS, GCP, Azure)
-- Use a tunnel service (ngrok, cloudflared) for testing
+```bash
+set -a && source .env && set +a
+go run ./cmd/notify
+```
+
+The service listens on `http://localhost:8080` by default.
+
+## Testing
+
+```bash
+set -a && source .env && set +a
+go test ./...
+```
+
+## Docker
+
+Build and run with Docker Compose:
+
+```bash
+docker compose up -d --build
+```
+
+## GitHub Webhook Setup
+
+1. Go to your GitHub organization settings.
+2. Open `Webhooks` and create a new webhook.
+3. Use `https://your-server.com/webhook/github` as the payload URL.
+4. Set content type to `application/json`.
+5. Use the same secret value as `GITHUB_WEBHOOK_SECRET`.
+6. Enable the supported event types or choose all events.
+
+GitHub will send a `ping` event to verify the webhook.
+
+## Discord Webhook Setup
+
+1. Open your Discord channel settings.
+2. Go to `Integrations` -> `Webhooks`.
+3. Create a webhook and copy its URL.
+4. Extract the webhook ID and token from:
+
+```text
+https://discord.com/api/webhooks/WEBHOOK_ID/WEBHOOK_TOKEN
+```
 
 ## Security
 
-- All GitHub webhooks are validated using HMAC-SHA256 signatures
-- Only events from the configured organization are processed
-- Secrets are stored in `Config.toml` (gitignored)
-- Never commit your actual `Config.toml` with real credentials
-
-## Project Structure
-
-```
-notify/
-├── main.bal              # Main application code
-├── Ballerina.toml        # Project configuration
-├── Config.toml.example   # Example configuration (safe to commit)
-├── Config.toml           # Your actual config (gitignored)
-├── .env.example          # Environment variables reference
-└── resources/
-    └── templates/        # Message templates
-```
-
-## License
-
-MIT
-
-## Author
-
-**Pruthivithejan**
-
----
-
-Built with Ballerina
+- Webhooks are validated before payload processing.
+- Events outside the configured organization are ignored.
+- Local secrets stay in `.env`, which is gitignored.

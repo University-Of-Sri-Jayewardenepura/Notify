@@ -1,25 +1,26 @@
-# Build stage
-FROM ballerina/ballerina:2201.10.0 AS build
+FROM golang:1.25-alpine AS build
 
 WORKDIR /app
 
-# Copy source files
-COPY Ballerina.toml .
-COPY main.bal .
+RUN apk add --no-cache ca-certificates
 
-# Build the application
-RUN bal build
+COPY go.mod ./
+COPY cmd ./cmd
+COPY internal ./internal
 
-# Runtime stage
-FROM ballerina/ballerina:2201.10.0-runtime
+RUN go build -o /notify ./cmd/notify
 
-WORKDIR /home/ballerina
+FROM alpine:3.20
 
-# Copy the built JAR from build stage
-COPY --from=build /app/target/bin/notify.jar .
+WORKDIR /app
 
-# Expose the application port
+RUN apk add --no-cache ca-certificates wget
+RUN addgroup -S notify && adduser -S notify -G notify
+
+COPY --from=build /notify /usr/local/bin/notify
+
 EXPOSE 8080
 
-# Run the application
-CMD ["java", "-jar", "notify.jar"]
+USER notify
+
+CMD ["notify"]

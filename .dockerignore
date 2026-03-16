@@ -1,9 +1,15 @@
-# Ballerina build artifacts
+# Go build artifacts
+bin/
+dist/
 target/
+
+# Legacy Ballerina sources
+*.bal
+modules/
+Ballerina.toml
 Dependencies.toml
 
 # Configuration files with secrets
-Config.toml
 .env
 .env.local
 
@@ -21,12 +27,9 @@ Thumbs.db
 .gitignore
 
 # Documentation (not needed in container)
+docs/
 README.md
 COMMIT_CONVENTION.md
-*.md
-
-# Example files
-*.example
 
 # Logs
 *.log
