@@ -9,7 +9,7 @@ import (
 )
 
 func TestHealthRouteReturnsServiceStatus(t *testing.T) {
-	router := NewRouter()
+	router := NewRouter(RouterDependencies{})
 
 	req := httptest.NewRequest(http.MethodGet, "/webhook/health", nil)
 	rec := httptest.NewRecorder()
@@ -52,7 +52,7 @@ func TestHealthRouteReturnsServiceStatus(t *testing.T) {
 }
 
 func TestHealthRouteRejectsNonGetRequests(t *testing.T) {
-	router := NewRouter()
+	router := NewRouter(RouterDependencies{})
 
 	req := httptest.NewRequest(http.MethodPost, "/webhook/health", nil)
 	rec := httptest.NewRecorder()

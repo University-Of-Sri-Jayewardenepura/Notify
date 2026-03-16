@@ -4,8 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/pruthivithejan/notify/internal/config"
-	"github.com/pruthivithejan/notify/internal/httpapi"
+	"github.com/University-Of-Sri-Jayewardenepura/Notify/internal/config"
+	"github.com/University-Of-Sri-Jayewardenepura/Notify/internal/httpapi"
+	"github.com/University-Of-Sri-Jayewardenepura/Notify/internal/service"
 )
 
 func main() {
@@ -16,7 +17,12 @@ func main() {
 
 	log.Printf("starting notify on :%s", cfg.Port)
 
-	if err := http.ListenAndServe(":"+cfg.Port, httpapi.NewRouter()); err != nil {
+	svc := service.New()
+
+	if err := http.ListenAndServe(":"+cfg.Port, httpapi.NewRouter(httpapi.RouterDependencies{
+		GitHubWebhookSecret: cfg.GitHubWebhookSecret,
+		GitHubService:       svc,
+	})); err != nil {
 		log.Fatal(err)
 	}
 }

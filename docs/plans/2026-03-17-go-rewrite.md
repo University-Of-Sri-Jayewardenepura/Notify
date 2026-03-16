@@ -26,7 +26,7 @@
 
 **Step 1: Create the Go module**
 
-Run: `go mod init github.com/pruthivithejan/notify`
+Run: `go mod init github.com/University-Of-Sri-Jayewardenepura/Notify`
 Expected: `go.mod` is created at the repo root
 
 **Step 2: Add the minimal entrypoint**
