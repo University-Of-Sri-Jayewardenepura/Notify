@@ -1,5 +1,12 @@
 # Notify - GitHub to Discord Notification Service
-# Copy this file to Config.toml and fill in your values
+# Legacy Ballerina configuration reference during the Go migration.
+# The Go service reads environment variables instead:
+#   PORT
+#   GITHUB_ORGANIZATION
+#   GITHUB_WEBHOOK_SECRET
+#   GITHUB_TOKEN
+#   DISCORD_WEBHOOK_ID
+#   DISCORD_WEBHOOK_TOKEN
 
 # Server port
 port = 8080
