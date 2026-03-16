@@ -1,0 +1,27 @@
+{
+  "ref": "refs/heads/main",
+  "compare": "https://github.com/usj/repo/compare/old...new",
+  "commits": [
+    {
+      "id": "abcdef1234567890",
+      "message": "Add migration tests",
+      "url": "https://github.com/usj/repo/commit/abcdef1",
+      "author": {
+        "name": "Octo Cat"
+      }
+    }
+  ],
+  "repository": {
+    "name": "repo",
+    "full_name": "usj/repo",
+    "html_url": "https://github.com/usj/repo",
+    "owner": {
+      "login": "usj"
+    }
+  },
+  "sender": {
+    "login": "octocat",
+    "html_url": "https://github.com/octocat",
+    "avatar_url": "https://avatars.example/octocat.png"
+  }
+}

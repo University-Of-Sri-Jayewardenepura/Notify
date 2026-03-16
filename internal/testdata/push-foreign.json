@@ -1,0 +1,27 @@
+{
+  "ref": "refs/heads/main",
+  "compare": "https://github.com/other/repo/compare/old...new",
+  "commits": [
+    {
+      "id": "abcdef1234567890",
+      "message": "External push",
+      "url": "https://github.com/other/repo/commit/abcdef1",
+      "author": {
+        "name": "External User"
+      }
+    }
+  ],
+  "repository": {
+    "name": "repo",
+    "full_name": "other/repo",
+    "html_url": "https://github.com/other/repo",
+    "owner": {
+      "login": "other"
+    }
+  },
+  "sender": {
+    "login": "external-user",
+    "html_url": "https://github.com/external-user",
+    "avatar_url": "https://avatars.example/external-user.png"
+  }
+}

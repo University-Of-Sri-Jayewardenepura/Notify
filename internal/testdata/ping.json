@@ -1,0 +1,7 @@
+{
+  "zen": "Keep it logically awesome.",
+  "hook_id": 123456789,
+  "hook": {
+    "type": "Organization"
+  }
+}
