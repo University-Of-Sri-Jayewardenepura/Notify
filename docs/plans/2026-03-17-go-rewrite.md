@@ -2,9 +2,9 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Replace the current Ballerina GitHub-to-Discord webhook service with a Go implementation using a layered package structure and staged in-place cutover commits.
+**Goal:** Replace the current Ballerina GitHub-to-Discord webhook service with a Go implementation that serves as `v1` of an extensible GitHub organization operations microservice, using a layered package structure and staged in-place cutover commits.
 
-**Architecture:** Build a Go service under `cmd/notify` and `internal/...`, migrate the HTTP edge and webhook verification first, then move event rendering and Discord delivery, switch deployment assets, and finally remove the Ballerina implementation. Preserve the current endpoints and core behavior while cleaning up package boundaries and unused config.
+**Architecture:** Build a Go service under `cmd/notify` and `internal/...`, keeping `v1` feature scope limited to the current webhook notifier while separating workflow orchestration from tool integrations. Migrate the HTTP edge and webhook verification first, introduce reusable workflow and integration boundaries, then move Discord delivery, switch deployment assets, and finally remove the Ballerina implementation.
 
 **Tech Stack:** Go, standard library HTTP server, `go test`, Docker, docker-compose
 
@@ -20,8 +20,9 @@
 - Create: `internal/httpapi/health.go`
 - Create: `internal/service/service.go`
 - Create: `internal/github/types.go`
-- Create: `internal/discord/client.go`
-- Modify: `README.md`
+- Create: `internal/workflows/notify/workflow.go`
+- Create: `internal/integrations/discord/client.go`
+- Test: `internal/httpapi/health_test.go`
 
 **Step 1: Create the Go module**
 
@@ -56,7 +57,7 @@ Expected: PASS with zero or minimal placeholder tests
 
 Run:
 ```bash
-git add go.mod cmd/notify internal README.md
+git add go.mod cmd/notify internal
 git commit -m "feat: scaffold Go service structure"
 ```
 
@@ -168,6 +169,7 @@ git commit -m "feat: migrate webhook verification flow"
 - Create: `internal/github/filter_test.go`
 - Create: `internal/domain/events.go`
 - Modify: `internal/service/service.go`
+- Modify: `internal/workflows/notify/workflow.go`
 
 **Step 1: Write failing org filter tests**
 
@@ -189,7 +191,7 @@ Move org ownership checks into `internal/github/filter.go`.
 Add a service entrypoint that:
 - skips org filtering for `ping`
 - ignores non-matching org events
-- passes eligible events to Discord rendering/delivery
+- routes eligible events into the notification workflow
 
 **Step 4: Verify tests**
 
@@ -204,12 +206,51 @@ git add internal/github internal/domain internal/service
 git commit -m "feat: add event filtering and dispatch"
 ```
 
-### Task 5: Migrate the Discord client and payload types
+### Task 5: Add workflow and integration boundaries
 
 **Files:**
-- Modify: `internal/discord/client.go`
-- Create: `internal/discord/types.go`
-- Create: `internal/discord/client_test.go`
+- Modify: `internal/service/service.go`
+- Modify: `internal/workflows/notify/workflow.go`
+- Create: `internal/workflows/contracts.go`
+- Create: `internal/integrations/contracts.go`
+- Create: `internal/workflows/notify/workflow_test.go`
+
+**Step 1: Write failing workflow dispatch tests**
+
+Cover:
+- service invokes the notification workflow for supported events
+- workflow can depend on an abstract delivery integration
+- ignored events do not invoke the workflow
+
+Run: `go test ./internal/workflows/... ./internal/service -v`
+Expected: FAIL
+
+**Step 2: Implement workflow and integration contracts**
+
+Define narrow interfaces so:
+- workflows consume GitHub events and decide actions
+- integrations perform tool-specific delivery
+- future org-ops workflows can be added without changing HTTP or GitHub parsing layers
+
+**Step 3: Verify tests**
+
+Run: `go test ./internal/workflows/... ./internal/service -v`
+Expected: PASS
+
+**Step 4: Commit**
+
+Run:
+```bash
+git add internal/service internal/workflows internal/integrations
+git commit -m "feat: add workflow and integration boundaries"
+```
+
+### Task 6: Migrate the Discord client and payload types
+
+**Files:**
+- Modify: `internal/integrations/discord/client.go`
+- Create: `internal/integrations/discord/types.go`
+- Create: `internal/integrations/discord/client_test.go`
 
 **Step 1: Write failing Discord client tests**
 
@@ -218,7 +259,7 @@ Cover:
 - successful 2xx response handling
 - non-2xx response handling
 
-Run: `go test ./internal/discord -v`
+Run: `go test ./internal/integrations/discord -v`
 Expected: FAIL
 
 **Step 2: Implement Discord payload and client types**
@@ -234,24 +275,24 @@ Implement a client that posts JSON to Discord.
 
 **Step 3: Verify tests**
 
-Run: `go test ./internal/discord -v`
+Run: `go test ./internal/integrations/discord -v`
 Expected: PASS
 
 **Step 4: Commit**
 
 Run:
 ```bash
-git add internal/discord
+git add internal/integrations/discord
 git commit -m "feat: add Discord webhook client"
 ```
 
-### Task 6: Migrate GitHub event renderers
+### Task 7: Migrate GitHub event renderers
 
 **Files:**
 - Create: `internal/github/payloads.go`
-- Create: `internal/discord/render.go`
-- Create: `internal/discord/render_test.go`
-- Modify: `internal/service/service.go`
+- Create: `internal/integrations/discord/render.go`
+- Create: `internal/integrations/discord/render_test.go`
+- Modify: `internal/workflows/notify/workflow.go`
 
 **Step 1: Write failing renderer tests using fixtures**
 
@@ -266,7 +307,7 @@ Add focused tests for:
 - `star`
 - `ping`
 
-Run: `go test ./internal/discord ./internal/service -v`
+Run: `go test ./internal/integrations/discord ./internal/workflows/... -v`
 Expected: FAIL
 
 **Step 2: Port the render logic incrementally**
@@ -275,23 +316,23 @@ Translate the Ballerina event formatting into Go, preserving the main notificati
 
 **Step 3: Verify tests**
 
-Run: `go test ./internal/discord ./internal/service -v`
+Run: `go test ./internal/integrations/discord ./internal/workflows/... -v`
 Expected: PASS
 
 **Step 4: Commit**
 
 Run:
 ```bash
-git add internal/github internal/discord internal/service
+git add internal/github internal/integrations/discord internal/workflows
 git commit -m "feat: migrate GitHub event rendering"
 ```
 
-### Task 7: Add fixture-based parity tests and sample payloads
+### Task 8: Add fixture-based parity tests and sample payloads
 
 **Files:**
 - Create: `internal/testdata/*.json`
 - Create: `internal/httpapi/github_handler_test.go`
-- Modify: `internal/discord/render_test.go`
+- Modify: `internal/integrations/discord/render_test.go`
 
 **Step 1: Add representative GitHub webhook fixtures**
 
@@ -314,11 +355,11 @@ Expected: PASS
 
 Run:
 ```bash
-git add internal/testdata internal/httpapi internal/discord
+git add internal/testdata internal/httpapi internal/integrations/discord
 git commit -m "test: add webhook parity fixtures"
 ```
 
-### Task 8: Switch deployment assets to Go
+### Task 9: Switch deployment assets to Go
 
 **Files:**
 - Modify: `Dockerfile`
@@ -352,7 +393,7 @@ git add Dockerfile docker-compose.yml README.md .dockerignore .env.example
 git commit -m "chore: switch runtime and docs to Go"
 ```
 
-### Task 9: Remove the Ballerina implementation
+### Task 10: Remove the Ballerina implementation
 
 **Files:**
 - Delete: `main.bal`
@@ -389,7 +430,7 @@ git add -A
 git commit -m "refactor: remove Ballerina implementation"
 ```
 
-### Task 10: Final verification and cleanup
+### Task 11: Final verification and cleanup
 
 **Files:**
 - Modify: `docs/plans/2026-03-17-go-rewrite.md`

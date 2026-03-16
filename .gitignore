@@ -30,3 +30,7 @@ COMMIT_CONVENTION.md
 
 # Cloud configuration (generated/customizable)
 Cloud.toml
+
+docs/*
+!docs/plans/
+!docs/plans/**
